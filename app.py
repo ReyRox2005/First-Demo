@@ -2,14 +2,20 @@ import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-# ---------------- Firebase Init using Streamlit Secrets ----------------
+# ---------------- Config ----------------
+SERVICE_JSON = "campusvibe-2025-firebase-adminsdk-fbsvc-661818db3a.json"
+
+# ---------------- Firebase Init ----------------
 if not firebase_admin._apps:
-    # Convert secrets to a dictionary
-    firebase_dict = dict(st.secrets["FIREBASE"])
-    
-    # Initialize Firebase
-    cred = credentials.Certificate(firebase_dict)
-    firebase_admin.initialize_app(cred)
+    try:
+        cred = credentials.Certificate(SERVICE_JSON)
+        firebase_admin.initialize_app(cred)
+    except FileNotFoundError:
+        st.error(f"Error: The service JSON file '{SERVICE_JSON}' was not found.")
+        st.stop()
+    except Exception as e:
+        st.error(f"Firebase initialization error: {e}")
+        st.stop()
 
 db = firestore.client()
 
@@ -46,17 +52,19 @@ if "user_name" not in st.session_state:
 if "show_signup" not in st.session_state:
     st.session_state.show_signup = False
 
-st.set_page_config(page_title="CampusVibe", layout="centered")
+st.set_page_config(page_title="CampusVibe", layout="wide")
 
-# ---------------- Page Header ----------------
-st.markdown(
-    "<h1 style='text-align:center;color:#2575fc;font-family:Segoe UI;'>CampusVibe</h1>",
-    unsafe_allow_html=True,
-)
+# =========================================================
+# ---------------- LOGIN / REGISTER -----------------------
+# =========================================================
+if not st.session_state.auth:
 
-# ---------------- Login/Register Container ----------------
-with st.container():
-    col1, col2 = st.columns([1,1])
+    st.markdown(
+        "<h1 style='text-align:center;color:#2575fc;font-family:Segoe UI;'>CampusVibe</h1>",
+        unsafe_allow_html=True,
+    )
+
+    col1, col2 = st.columns([1, 1])
 
     if not st.session_state.show_signup:
         # ---- Login Form ----
@@ -70,18 +78,12 @@ with st.container():
                     st.session_state.auth = True
                     st.session_state.user_email = login_email
                     st.session_state.user_name = msg
-                    st.success(f"Welcome {msg}!")
-                    st.experimental_rerun()
+                    st.rerun()   # ✅ fixed
                 else:
                     st.error(msg)
-            st.markdown(
-                "<div style='text-align:center;margin-top:10px;'>Don't have an account? <a href='#' style='color:#6a11cb;' onclick=''>Sign Up</a></div>",
-                unsafe_allow_html=True,
-            )
             if st.button("Go to Sign Up"):
                 st.session_state.show_signup = True
 
-        # Empty second column to simulate slide effect
         with col2:
             st.write("")
 
@@ -102,17 +104,140 @@ with st.container():
             if st.button("Back to Sign In"):
                 st.session_state.show_signup = False
 
-        # Empty first column to simulate slide effect
         with col1:
             st.write("")
 
-# ---------------- Dashboard ----------------
-if st.session_state.auth:
+# =========================================================
+# ---------------- HOME / DASHBOARD -----------------------
+# =========================================================
+else:
+    # Custom CSS
+    st.markdown("""
+        <style>
+            .block-container {
+                padding: 1rem 2rem;
+            }
+            .note-card {
+                background-color: #f4f0ff;
+                padding: 1rem;
+                border-radius: 10px;
+                margin-bottom: 1rem;
+                box-shadow: 0 0 5px #ccc;
+            }
+            .note-title {
+                font-weight: 600;
+            }
+            .chat-box {
+                background-color: #f0f4ff;
+                padding: 1rem;
+                border-radius: 10px;
+            }
+            .ask-box {
+                background-color: #fdf4ff;
+                padding: 1rem;
+                border-radius: 10px;
+            }
+            .submit-button {
+                background-color: #6557f5;
+                color: white;
+                padding: 0.4rem 1.2rem;
+                border-radius: 5px;
+                margin: 0.5rem 0;
+                border: none;
+            }
+            .accept-button {
+                background-color: #30c05b;
+                color: white;
+                border-radius: 5px;
+                padding: 0.3rem 0.8rem;
+                border: none;
+            }
+            .reject-button {
+                background-color: #e74c3c;
+                color: white;
+                border-radius: 5px;
+                padding: 0.3rem 0.8rem;
+                border: none;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # ---------------- HEADER ----------------
+    col_logo, col_search, col_notify = st.columns([2, 6, 1])
+    col_logo.markdown("### 🎓 CampusVibe")
+    col_search.text_input("Search anything...", label_visibility="collapsed", placeholder="Search...")
+    col_notify.markdown("🔔", unsafe_allow_html=True)
+
     st.markdown("---")
-    st.success(f"🚀 Logged in as: {st.session_state.user_email}")
-    st.write(f"Hello **{st.session_state.user_name}**, welcome to the CampusVibe dashboard.")
-    if st.button("Logout"):
-        st.session_state.auth = False
-        st.session_state.user_email = None
-        st.session_state.user_name = None
-        st.experimental_rerun()
+
+    # ---------------- SIDEBAR ----------------
+    with st.sidebar:
+        st.markdown(f"👋 Welcome, **{st.session_state.user_name}**")
+        if st.button("Logout"):
+            st.session_state.auth = False
+            st.session_state.user_email = None
+            st.session_state.user_name = None
+            st.rerun()   # ✅ fixed
+
+        st.markdown("### 🎯 Filters")
+        st.selectbox("Select Year", ["1st Year", "2nd Year", "3rd Year", "4th Year"])
+        st.selectbox("Branch", ["CSE", "ECE", "ME", "CE"])
+        st.selectbox("Subject", ["DSA", "OS", "DBMS", "CN", "AI"])
+
+        st.markdown("<button class='submit-button'>Upload Notes 🧑‍🏫</button>", unsafe_allow_html=True)
+        st.markdown("<button class='submit-button' style='background-color:#28a745;'>Chat with Senior💬</button>", unsafe_allow_html=True)
+
+    # ---------------- MAIN AREA ----------------
+    st.markdown("## 🔥 Trending Notes")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown("""
+        <div class='note-card'>
+            <div class='note-title'>📄 DSA Unit 1</div>
+            ⭐ 32 downloads<br><br>
+            <button class='submit-button'>View</button>
+            <button class='submit-button'>Download</button>
+        </div>""", unsafe_allow_html=True)
+
+    with col2:
+        st.markdown("""
+        <div class='note-card'>
+            <div class='note-title'>📄 OS Unit 2</div>
+            ⭐ 42 downloads<br><br>
+            <button class='submit-button'>View</button>
+            <button class='submit-button'>Download</button>
+        </div>""", unsafe_allow_html=True)
+
+    with col3:
+        st.markdown("""
+        <div class='note-card'>
+            <div class='note-title'>📄 DBMS Unit 3</div>
+            ⭐ 52 downloads<br><br>
+            <button class='submit-button'>View</button>
+            <button class='submit-button'>Download</button>
+        </div>""", unsafe_allow_html=True)
+
+    # ---------------- Chat Requests ----------------
+    st.markdown("""
+    <div class='chat-box'>
+        <h4>💬 Chat Requests</h4>
+        <p><i>"anonFirstYr23" wants to connect. Topic: DSA</i></p>
+        <button class='accept-button'>Accept</button>
+        <button class='reject-button'>Reject</button>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ---------------- Ask a Senior ----------------
+    st.markdown("""
+    <div class='ask-box'>
+        <h4>🧠 Ask a Senior</h4>
+        <p><i>"What to study for placement in 2nd year?"</i></p>
+        <button class='submit-button'>Answer Question</button>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ---------------- Ask your own ----------------
+    st.markdown("### Ask Your Question")
+    user_q = st.text_area("Type your question here...")
