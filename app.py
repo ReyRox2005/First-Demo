@@ -6,15 +6,8 @@ from firebase_admin import credentials, firestore
 firebase_config = st.secrets["FIREBASE"]
 # ---------------- Firebase Init ----------------
 if not firebase_admin._apps:
-    try:
-        cred = credentials.Certificate(SERVICE_JSON)
-        firebase_admin.initialize_app(cred)
-    except FileNotFoundError:
-        st.error(f"Error: The service JSON file '{SERVICE_JSON}' was not found.")
-        st.stop()
-    except Exception as e:
-        st.error(f"Firebase initialization error: {e}")
-        st.stop()
+    cred = credentials.Certificate(firebase_config)
+    firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
