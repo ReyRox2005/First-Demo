@@ -8,7 +8,7 @@ SERVICE_JSON = "campusvibe-2025-firebase-adminsdk-fbsvc-661818db3a.json"
 # ---------------- Firebase Init ----------------
 if not firebase_admin._apps:
     try:
-        cred = credentials.Certificate(SERVICE_JSON)
+        cred = credentials.Certificate(SERVICE_JSON)  
         firebase_admin.initialize_app(cred)
     except FileNotFoundError:
         st.error(f"Error: The service JSON file '{SERVICE_JSON}' was not found.")
