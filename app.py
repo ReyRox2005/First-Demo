@@ -3,7 +3,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 # ---------------- Config ----------------
-firebase_config = st.secrets["FIREBASE"]
+firebase_dict = dict(st.secrets["FIREBASE"])
 # ---------------- Firebase Init ----------------
 if not firebase_admin._apps:
     cred = credentials.Certificate(firebase_config)
