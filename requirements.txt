@@ -3,3 +3,4 @@ streamlit-extras
 mysql-connector-python
 streamlit==1.26.0
 firebase-admin==6.1.1
+ 
