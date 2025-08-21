@@ -2,11 +2,13 @@ import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-# ---------------- Config ----------------
-firebase_dict = dict(st.secrets["FIREBASE"])
-# ---------------- Firebase Init ----------------
+# ---------------- Firebase Init using Streamlit Secrets ----------------
 if not firebase_admin._apps:
-    cred = credentials.Certificate(firebase_config)
+    # Convert secrets to a dictionary
+    firebase_dict = dict(st.secrets["FIREBASE"])
+    
+    # Initialize Firebase
+    cred = credentials.Certificate(firebase_dict)
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
