@@ -3,7 +3,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 # ---------------- Config ----------------
-SERVICE_JSON = st.scretes([FIREBASE])
+SERVICE_JSON = st.secrets([FIREBASE])
 
 # ---------------- Firebase Init ----------------
 if not firebase_admin._apps:
