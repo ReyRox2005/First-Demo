@@ -3,7 +3,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 # ---------------- Config ----------------
-SERVICE_JSON = "campusvibe-2025-firebase-adminsdk-fbsvc-661818db3a.json"
+SERVICE_JSON = st.scretes([FIREBASE])
 
 # ---------------- Firebase Init ----------------
 if not firebase_admin._apps:
