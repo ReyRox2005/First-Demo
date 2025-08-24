@@ -2,17 +2,12 @@ import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-# ---------------- Config ----------------
-SERVICE_JSON = st.secrets([FIREBASE])
-
-# ---------------- Firebase Init ----------------
+# ---------------- Firebase Init (using Streamlit secrets) ----------------
 if not firebase_admin._apps:
     try:
-        cred = credentials.Certificate(SERVICE_JSON)  
+        firebase_secrets = st.secrets["firebase"]
+        cred = credentials.Certificate(dict(firebase_secrets))
         firebase_admin.initialize_app(cred)
-    except FileNotFoundError:
-        st.error(f"Error: The service JSON file '{SERVICE_JSON}' was not found.")
-        st.stop()
     except Exception as e:
         st.error(f"Firebase initialization error: {e}")
         st.stop()
@@ -78,7 +73,7 @@ if not st.session_state.auth:
                     st.session_state.auth = True
                     st.session_state.user_email = login_email
                     st.session_state.user_name = msg
-                    st.rerun()   # ✅ fixed
+                    st.rerun()
                 else:
                     st.error(msg)
             if st.button("Go to Sign Up"):
@@ -177,7 +172,7 @@ else:
             st.session_state.auth = False
             st.session_state.user_email = None
             st.session_state.user_name = None
-            st.rerun()   # ✅ fixed
+            st.rerun()
 
         st.markdown("### 🎯 Filters")
         st.selectbox("Select Year", ["1st Year", "2nd Year", "3rd Year", "4th Year"])
