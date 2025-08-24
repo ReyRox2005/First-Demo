@@ -5,7 +5,7 @@ from firebase_admin import credentials, firestore
 # ---------------- Firebase Init (using Streamlit secrets) ----------------
 if not firebase_admin._apps:
     try:
-        firebase_secrets = st.secrets["firebase"]
+        firebase_secrets = st.secrets["FIREBASE"]
         cred = credentials.Certificate(dict(firebase_secrets))
         firebase_admin.initialize_app(cred)
     except Exception as e:
